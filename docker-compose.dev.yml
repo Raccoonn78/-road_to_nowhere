@@ -1,0 +1,43 @@
+version: '3'
+
+# docker-compose -f docker-compose.dev.yml build
+# docker-compose -f docker-compose.dev.yml up -d
+services:
+  app:
+    build: ./app
+    container_name: flask_raccoon_app # flask_raccoon_app   flask_azz_yt
+    command: gunicorn --bind 0.0.0.0:5000 app:app # WSGI server
+    environment:
+      - DATABASE_URL=postgresql://mir_user:mir_psw@db:5432/mir_dbname # путь до бд, см. db service
+    volumes:
+      - ./app:/app
+    expose:
+      - 5000
+    depends_on:
+      - db
+  db:
+    image: postgres:13-alpine
+    volumes:
+      - ./pg_db:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=mir_user # имя полльзователя в PGadmin
+      - POSTGRES_PASSWORD=mir_psw 
+      - POSTGRES_DB=mir_dbname # название БД (во вкладке connection при первом заходе в PDadmin)
+  pgadmin:
+    image: dpage/pgadmin4
+    depends_on:
+      - db   # имя хоста в PGADMIN
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=root@raccoon.ru
+      - PGADMIN_DEFAULT_PASSWORD=123qweasd # если сменить здесь, то нужно удалить контентер
+      - PGADMIN_LISTEN_ADDRESS=0.0.0.0 # чтобы не было косяков с nginx лушче в одну сеть с app
+      - PGADMIN_LISTEN_PORT=5555
+  nginx:
+    build: ./nginx
+    ports:
+      - 80:80
+    volumes:
+      - ./static:/home/web/default/static
+    depends_on:
+      - app
+      - pgadmin

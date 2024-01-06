@@ -1,0 +1,10 @@
+.idea
+/.idea/
+/pg_db/
+__pycache__
+nodes_df.csv
+xyz_cube.csv
+xyz_cube.xlsx
+xyz_data_222.csv
+zxc_123.csv
+py_log.log
